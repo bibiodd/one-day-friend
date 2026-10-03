@@ -10,12 +10,8 @@
   body {
     font-family: "Courier New", "PingFang SC", monospace;
     background: #0a0a0a;
-    background-image:
-      radial-gradient(circle at 20% 10%, rgba(120,0,0,0.25), transparent 40%),
-      radial-gradient(circle at 80% 90%, rgba(60,0,80,0.25), transparent 40%),
-      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 3px);
-    color: #c9c9c9; min-height: 100%;
-    display: flex; align-items: center; justify-content: center; padding: 16px;
+    background-image: radial-gradient(circle at 20% 10%, rgba(120,0,0,0.25), transparent 40%), radial-gradient(circle at 80% 90%, rgba(60,0,80,0.25), transparent 40%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 3px);
+    color: #c9c9c9; min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 16px;
   }
   .hidden { display: none !important; }
   .screen { width: 100%; max-width: 480px; }
@@ -24,7 +20,7 @@
     border-top: 2px solid #8b0000; border-bottom: 2px solid #4b0082;
     padding: 26px 20px; box-shadow: 0 0 60px rgba(139,0,0,0.15), inset 0 0 80px rgba(0,0,0,0.6);
   }
-  h1 { font-size: 14px; font-weight: 400; letter-spacing: 5px; text-transform: uppercase; color: #8b0000; text-align: center; margin-bottom: 6px; text-shadow: 0 0 12px rgba(139,0,0,0.7); }
+  h1 { font-size: 14px; font-weight: 400; letter-spacing: 5px; text-transform: uppercase; color: #8b0000; text-align: center; margin-bottom: 6px; text-shadow: 0 0 12px rgba(139,0,0,0.7); cursor: pointer; }
   .sub { text-align:center; font-size:10px; letter-spacing:2px; color:#555; margin-bottom:4px; }
   .mbti { text-align:center; font-size:10px; letter-spacing:3px; color:#4b0082; margin-bottom:20px; }
   .desc { text-align:center; font-size:12px; line-height:2; color:#777; margin-bottom:22px; letter-spacing:1px; }
@@ -38,13 +34,6 @@
   .seq { font-size: 11px; color: #4b0082; letter-spacing: 2px; margin-top: 10px; }
   .timer { text-align: center; font-size: 12px; color: #666; letter-spacing: 2px; margin-bottom: 18px; }
   .timer span { color: #8b0000; }
-  .block-area { margin-bottom: 16px; }
-  .block-label { font-size: 10px; letter-spacing: 2px; color: #444; margin-bottom: 8px; }
-  input[type=text] { width: 100%; padding: 11px 12px; background: #050505; border: 1px solid #222; color: #c9c9c9; font-family: inherit; font-size: 13px; outline: none; -webkit-appearance: none; }
-  input[type=text]:focus { border-color: #8b0000; }
-  .block-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .block-tag { font-size: 11px; padding: 4px 8px; background: rgba(139,0,0,0.15); border: 1px solid #4a0000; color: #b0b0b0; }
-  .block-tag span { color: #8b0000; margin-left: 6px; }
   .btns { display: flex; gap: 10px; margin-top: 12px; }
   .chat-card { padding: 0; display: flex; flex-direction: column; height: 82vh; max-height: 720px; }
   .chat-header { padding: 14px 18px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
@@ -61,7 +50,7 @@
   .msg.me   { align-self: flex-end;   background: #1a0a0a; border-right: 2px solid #8b0000; color: #d0d0d0; }
   .msg .who { font-size: 9px; color: #444; letter-spacing: 1px; margin-bottom: 4px; }
   .chat-input { display: flex; border-top: 1px solid #1a1a1a; }
-  .chat-input input { flex: 1; border: none; border-right: 1px solid #1a1a1a; border-radius: 0; }
+  .chat-input input { flex: 1; padding: 11px 12px; background: #050505; border: none; border-right: 1px solid #1a1a1a; color: #c9c9c9; font-family: inherit; font-size: 13px; outline: none; }
   .chat-input button { width: 80px; border: none; }
   .chat-footer { display: flex; justify-content: space-between; padding: 8px 18px; font-size: 11px; color: #555; letter-spacing: 2px; }
   .chat-footer span { cursor: pointer; }
@@ -78,7 +67,7 @@
 
 <div class="screen" id="screen-entry">
   <div class="card">
-    <h1>One Day Friend</h1>
+    <h1 id="main-title">One Day Friend</h1>
     <div class="sub">— 匿名 · 限时 24 小时 —</div>
     <div class="mbti">ENFP FRIENDLY</div>
     <p class="desc">不填资料 · 不上传头像 · 全程匿名<br>配对成功 24 小时后自动解散</p>
@@ -98,11 +87,6 @@
       <div class="seq">序号 #<span id="my-seq">—</span></div>
     </div>
     <div class="timer">剩余退池时间 <span id="pool-timer">--:--:--</span></div>
-    <div class="block-area">
-      <div class="block-label">回避名单（输入代号，回车添加）</div>
-      <input type="text" id="block-input" placeholder="输入要回避的代号" />
-      <div class="block-list" id="block-list"></div>
-    </div>
     <div class="btns">
       <button class="mini" id="btn-reroll" onclick="reroll()">换 号</button>
       <button class="mini" onclick="leave()">退 出</button>
@@ -127,8 +111,13 @@
       <button onclick="sendMsg()">发送</button>
     </div>
     <div class="chat-footer">
-      <span onclick="report()">举报</span>
-      <span onclick="toast('举报已记录')">举报记录</span>
+      <div>
+        <span onclick="report()">举报</span>
+        <span onclick="toast('举报已记录')" style="margin-left:12px;">举报记录</span>
+      </div>
+      <div>
+        <span onclick="exitChat()">退出聊天</span>
+      </div>
     </div>
   </div>
 </div>
@@ -162,7 +151,6 @@ function openModal(title, text) { $('#modal-title').textContent = title; $('#mod
 function closeModal() { $('#modal').classList.add('hidden'); }
 function toast(text) { const el = document.createElement('div'); el.className = 'toast'; el.textContent = text; document.body.appendChild(el); setTimeout(() => el.remove(), 1800); }
 function fmt(ms) { if (ms < 0) ms = 0; const s = Math.floor(ms / 1000); const h = String(Math.floor(s / 3600)).padStart(2, '0'); const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0'); const ss = String(s % 60).padStart(2, '0'); return h + ':' + m + ':' + ss; }
-function fmtShort(ms) { if (ms < 0) ms = 0; const s = Math.ceil(ms / 1000); if (s < 60) return s + ' 秒'; return Math.floor(s / 60) + ' 分 ' + (s % 60) + ' 秒'; }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 async function api(path, body) {
@@ -176,6 +164,12 @@ function connectSocket() {
   socket.on('connect', () => socket.emit('join', { id: UID }));
   socket.on('matched', data => enterChat(data));
   socket.on('message', msg => appendMsg(msg));
+  socket.on('match_closed', (data) => {
+    stopTick();
+    state.status = 'closed';
+    show('entry');
+    openModal('会话已结束', '管理员已强制解散本次配对。');
+  });
 }
 
 function applyMe(me) {
@@ -183,19 +177,19 @@ function applyMe(me) {
   state = me;
   if (me.status === 'pool') {
     show('pool'); $('#my-code').textContent = me.code; $('#my-seq').textContent = me.seq;
-    renderBlocks(); startTick();
+    startTick();
   } else if (me.status === 'paired') {
     enterChat({ pairId: me.pairId, partnerCode: me.partnerCode, pairStart: Date.now() - (24*3600*1000 - me.remainPairMs) });
   } else { show('entry'); }
 }
 
 async function join() {
-  const r = await api('/api/join', { id: UID, blocks: state.blocks || [] });
+  const r = await api('/api/join', { id: UID });
   applyMe(r);
 }
 
 async function reroll() {
-  const r = await api('/api/reroll', { id: UID, blocks: state.blocks || [] });
+  const r = await api('/api/reroll', { id: UID });
   applyMe(r);
 }
 
@@ -203,23 +197,6 @@ async function leave() {
   await api('/api/leave', { id: UID });
   stopTick(); state.status = 'entry'; show('entry'); toast('已退出配对池');
 }
-
-function renderBlocks() {
-  const el = $('#block-list'); el.innerHTML = '';
-  (state.blocks || []).forEach((c, i) => {
-    const tag = document.createElement('div'); tag.className = 'block-tag'; tag.innerHTML = c + '<span>×</span>';
-    tag.onclick = () => { state.blocks.splice(i, 1); api('/api/join', { id: UID, blocks: state.blocks }); renderBlocks(); };
-    el.appendChild(tag);
-  });
-}
-
-$('#block-input').addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  const v = e.target.value.trim(); if (!v) return;
-  if (v === state.code) { toast('不能回避自己'); return; }
-  state.blocks = state.blocks || []; if (!state.blocks.includes(v)) state.blocks.push(v);
-  e.target.value = ''; api('/api/join', { id: UID, blocks: state.blocks }); renderBlocks(); toast('已添加回避：' + v);
-});
 
 function stopTick() { clearInterval(tickTimer); tickTimer = null; }
 function startTick() {
@@ -260,6 +237,42 @@ function sendMsg() {
 $('#msg-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
 
 function report() { openModal('已收到举报', '我们已记录本次会话。\n感谢你的反馈。'); }
+
+// 退出聊天页面（不解除配对）
+function exitChat() {
+  if (!state || state.status !== 'paired') return;
+  show('entry'); 
+  document.querySelector('#screen-entry button').textContent = '返回当前聊天';
+  document.querySelector('#screen-entry button').setAttribute('onclick', 'backToChat()');
+}
+
+function backToChat() {
+  if (state.status === 'paired') enterChat({ pairId: state.pairId, partnerCode: state.partnerCode, pairStart: state.pairStart });
+}
+
+// ===== 隐藏管理员口令 =====
+let adminClickCount = 0;
+document.querySelector('#main-title').addEventListener('click', () => {
+  adminClickCount++;
+  if (adminClickCount >= 5) {
+    adminClickCount = 0;
+    const key = prompt('请输入管理员密钥：');
+    if (key === 'admin_secret_2026') {
+      const targetCode = prompt('请输入要强制解散的其中一个用户的代号（例如：黑曜·小丑）：');
+      if (targetCode) {
+        fetch('/api/admin/force-close', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: targetCode, adminKey: 'admin_secret_2026' })
+        }).then(r => r.json()).then(data => {
+          alert(data.ok ? '✅ 已强制解散该配对' : '❌ 解散失败：' + (data.error || '未知错误'));
+        });
+      }
+    } else if (key !== null) {
+      alert('❌ 密钥错误');
+    }
+  }
+});
 
 (async function init() {
   connectSocket();
