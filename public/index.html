@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>一日好友 · One Day Friend</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Courier New", "PingFang SC", monospace;
+    background: #0a0a0a;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(120,0,0,0.25), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(60,0,80,0.25), transparent 40%),
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 3px);
+    color: #c9c9c9; min-height: 100%;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .hidden { display: none !important; }
+  .screen { width: 100%; max-width: 480px; }
+  .card {
+    background: rgba(10,10,10,0.9); border: 1px solid #2a2a2a;
+    border-top: 2px solid #8b0000; border-bottom: 2px solid #4b0082;
+    padding: 26px 20px; box-shadow: 0 0 60px rgba(139,0,0,0.15), inset 0 0 80px rgba(0,0,0,0.6);
+  }
+  h1 { font-size: 14px; font-weight: 400; letter-spacing: 5px; text-transform: uppercase; color: #8b0000; text-align: center; margin-bottom: 6px; text-shadow: 0 0 12px rgba(139,0,0,0.7); }
+  .sub { text-align:center; font-size:10px; letter-spacing:2px; color:#555; margin-bottom:4px; }
+  .mbti { text-align:center; font-size:10px; letter-spacing:3px; color:#4b0082; margin-bottom:20px; }
+  .desc { text-align:center; font-size:12px; line-height:2; color:#777; margin-bottom:22px; letter-spacing:1px; }
+  button { width: 100%; padding: 14px; background: transparent; border: 1px solid #333; color: #999; font-family: inherit; font-size: 13px; letter-spacing: 3px; cursor: pointer; transition: all 0.18s; text-transform: uppercase; }
+  button:hover, button:active { border-color:#8b0000; color:#e0e0e0; background:rgba(139,0,0,0.1); }
+  button:disabled { opacity: 0.35; }
+  .hint { text-align:center; font-size:10px; letter-spacing:1.5px; color:#333; margin-top:14px; line-height: 1.8; }
+  .code-box { text-align: center; padding: 22px 12px; background: rgba(0,0,0,0.4); border: 1px solid #1a1a1a; margin-bottom: 16px; }
+  .code-label { font-size: 10px; letter-spacing: 3px; color: #444; margin-bottom: 10px; }
+  .code { font-size: 20px; color: #7ee8fa; font-weight: 700; letter-spacing: 1px; text-shadow: 0 0 20px rgba(126,232,250,0.35); word-break: break-all; line-height: 1.4; }
+  .seq { font-size: 11px; color: #4b0082; letter-spacing: 2px; margin-top: 10px; }
+  .timer { text-align: center; font-size: 12px; color: #666; letter-spacing: 2px; margin-bottom: 18px; }
+  .timer span { color: #8b0000; }
+  .block-area { margin-bottom: 16px; }
+  .block-label { font-size: 10px; letter-spacing: 2px; color: #444; margin-bottom: 8px; }
+  input[type=text] { width: 100%; padding: 11px 12px; background: #050505; border: 1px solid #222; color: #c9c9c9; font-family: inherit; font-size: 13px; outline: none; -webkit-appearance: none; }
+  input[type=text]:focus { border-color: #8b0000; }
+  .block-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .block-tag { font-size: 11px; padding: 4px 8px; background: rgba(139,0,0,0.15); border: 1px solid #4a0000; color: #b0b0b0; }
+  .block-tag span { color: #8b0000; margin-left: 6px; }
+  .btns { display: flex; gap: 10px; margin-top: 12px; }
+  .chat-card { padding: 0; display: flex; flex-direction: column; height: 82vh; max-height: 720px; }
+  .chat-header { padding: 14px 18px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+  .chat-title { font-size: 12px; letter-spacing: 4px; color: #8b0000; }
+  .chat-partner { font-size: 11px; color: #666; letter-spacing: 1px; margin-top: 5px; }
+  .chat-partner span { color: #7ee8fa; }
+  .chat-timer { font-size: 13px; color: #4b0082; letter-spacing: 2px; }
+  .notice { font-size: 10px; letter-spacing: 1px; color: #a08a00; background: rgba(139,139,0,0.08); border-bottom: 1px solid #1a1a1a; padding: 8px 18px; text-align: center; }
+  .messages { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-thumb { background: #2a2a2a; }
+  .msg { max-width: 80%; padding: 9px 12px; font-size: 13px; line-height: 1.5; word-break: break-word; }
+  .msg.them { align-self: flex-start; background: #131313; border-left: 2px solid #4b0082; color: #b0b0b0; }
+  .msg.me   { align-self: flex-end;   background: #1a0a0a; border-right: 2px solid #8b0000; color: #d0d0d0; }
+  .msg .who { font-size: 9px; color: #444; letter-spacing: 1px; margin-bottom: 4px; }
+  .chat-input { display: flex; border-top: 1px solid #1a1a1a; }
+  .chat-input input { flex: 1; border: none; border-right: 1px solid #1a1a1a; border-radius: 0; }
+  .chat-input button { width: 80px; border: none; }
+  .chat-footer { display: flex; justify-content: space-between; padding: 8px 18px; font-size: 11px; color: #555; letter-spacing: 2px; }
+  .chat-footer span { cursor: pointer; }
+  .chat-footer span:hover { color: #8b0000; }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99; padding: 20px; }
+  .modal-box { background: #0a0a0a; border: 1px solid #2a2a2a; border-top: 2px solid #8b0000; padding: 24px 20px; max-width: 340px; width: 100%; }
+  .modal-title { font-size: 13px; letter-spacing: 3px; color: #8b0000; margin-bottom: 12px; }
+  .modal-text { font-size: 12px; line-height: 1.9; color: #999; margin-bottom: 20px; letter-spacing: 1px; }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(20,20,20,0.95); border: 1px solid #4b0082; color: #b0b0b0; font-size: 12px; letter-spacing: 1px; padding: 10px 18px; z-index: 200; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+</style>
+</head>
+<body>
+
+<div class="screen" id="screen-entry">
+  <div class="card">
+    <h1>One Day Friend</h1>
+    <div class="sub">— 匿名 · 限时 24 小时 —</div>
+    <div class="mbti">ENFP FRIENDLY</div>
+    <p class="desc">不填资料 · 不上传头像 · 全程匿名<br>配对成功 24 小时后自动解散</p>
+    <button onclick="join()">确 认 参 与</button>
+    <div class="hint">点击即表示同意 Demo 测试规则</div>
+  </div>
+</div>
+
+<div class="screen hidden" id="screen-pool">
+  <div class="card">
+    <h1>Waiting</h1>
+    <div class="sub">— 正在配对池中 —</div>
+    <div class="mbti">SEARCHING…</div>
+    <div class="code-box">
+      <div class="code-label">你的匿名代号</div>
+      <div class="code" id="my-code">—</div>
+      <div class="seq">序号 #<span id="my-seq">—</span></div>
+    </div>
+    <div class="timer">剩余退池时间 <span id="pool-timer">--:--:--</span></div>
+    <div class="block-area">
+      <div class="block-label">回避名单（输入代号，回车添加）</div>
+      <input type="text" id="block-input" placeholder="输入要回避的代号" />
+      <div class="block-list" id="block-list"></div>
+    </div>
+    <div class="btns">
+      <button class="mini" id="btn-reroll" onclick="reroll()">换 号</button>
+      <button class="mini" onclick="leave()">退 出</button>
+    </div>
+    <div class="hint">24 小时内未匹配将自动退池</div>
+  </div>
+</div>
+
+<div class="screen hidden" id="screen-chat">
+  <div class="card chat-card">
+    <div class="chat-header">
+      <div>
+        <div class="chat-title">一日好友</div>
+        <div class="chat-partner">对方：<span id="partner-code">—</span></div>
+      </div>
+      <div class="chat-timer" id="pair-timer">--:--:--</div>
+    </div>
+    <div class="notice">⚠ 请勿泄露姓名、班级等个人信息</div>
+    <div class="messages" id="messages"></div>
+    <div class="chat-input">
+      <input type="text" id="msg-input" placeholder="说点什么..." />
+      <button onclick="sendMsg()">发送</button>
+    </div>
+    <div class="chat-footer">
+      <span onclick="report()">举报</span>
+      <span onclick="toast('举报已记录')">举报记录</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">提示</div>
+    <div class="modal-text" id="modal-text"></div>
+    <button onclick="closeModal()">知道了</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const UID = (() => {
+  let id = localStorage.getItem('odf_uid');
+  if (!id) { id = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10); localStorage.setItem('odf_uid', id); }
+  return id;
+})();
+
+let state = { status: 'entry' };
+let socket = null;
+let tickTimer = null;
+
+function show(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  $('#screen-' + name).classList.remove('hidden');
+}
+function openModal(title, text) { $('#modal-title').textContent = title; $('#modal-text').textContent = text; $('#modal').classList.remove('hidden'); }
+function closeModal() { $('#modal').classList.add('hidden'); }
+function toast(text) { const el = document.createElement('div'); el.className = 'toast'; el.textContent = text; document.body.appendChild(el); setTimeout(() => el.remove(), 1800); }
+function fmt(ms) { if (ms < 0) ms = 0; const s = Math.floor(ms / 1000); const h = String(Math.floor(s / 3600)).padStart(2, '0'); const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0'); const ss = String(s % 60).padStart(2, '0'); return h + ':' + m + ':' + ss; }
+function fmtShort(ms) { if (ms < 0) ms = 0; const s = Math.ceil(ms / 1000); if (s < 60) return s + ' 秒'; return Math.floor(s / 60) + ' 分 ' + (s % 60) + ' 秒'; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function api(path, body) {
+  const r = await fetch(path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  return r.json();
+}
+
+function connectSocket() {
+  if (socket) return;
+  socket = io();
+  socket.on('connect', () => socket.emit('join', { id: UID }));
+  socket.on('matched', data => enterChat(data));
+  socket.on('message', msg => appendMsg(msg));
+}
+
+function applyMe(me) {
+  if (!me || me.status === 'none') { show('entry'); return; }
+  state = me;
+  if (me.status === 'pool') {
+    show('pool'); $('#my-code').textContent = me.code; $('#my-seq').textContent = me.seq;
+    renderBlocks(); startTick();
+  } else if (me.status === 'paired') {
+    enterChat({ pairId: me.pairId, partnerCode: me.partnerCode, pairStart: Date.now() - (24*3600*1000 - me.remainPairMs) });
+  } else { show('entry'); }
+}
+
+async function join() {
+  const r = await api('/api/join', { id: UID, blocks: state.blocks || [] });
+  applyMe(r);
+}
+
+async function reroll() {
+  const r = await api('/api/reroll', { id: UID, blocks: state.blocks || [] });
+  applyMe(r);
+}
+
+async function leave() {
+  await api('/api/leave', { id: UID });
+  stopTick(); state.status = 'entry'; show('entry'); toast('已退出配对池');
+}
+
+function renderBlocks() {
+  const el = $('#block-list'); el.innerHTML = '';
+  (state.blocks || []).forEach((c, i) => {
+    const tag = document.createElement('div'); tag.className = 'block-tag'; tag.innerHTML = c + '<span>×</span>';
+    tag.onclick = () => { state.blocks.splice(i, 1); api('/api/join', { id: UID, blocks: state.blocks }); renderBlocks(); };
+    el.appendChild(tag);
+  });
+}
+
+$('#block-input').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const v = e.target.value.trim(); if (!v) return;
+  if (v === state.code) { toast('不能回避自己'); return; }
+  state.blocks = state.blocks || []; if (!state.blocks.includes(v)) state.blocks.push(v);
+  e.target.value = ''; api('/api/join', { id: UID, blocks: state.blocks }); renderBlocks(); toast('已添加回避：' + v);
+});
+
+function stopTick() { clearInterval(tickTimer); tickTimer = null; }
+function startTick() {
+  stopTick();
+  tickTimer = setInterval(() => {
+    if (!state) return; const now = Date.now();
+    if (state.status === 'pool') {
+      const left = state.remainPoolMs ? state.remainPoolMs - (now - state._t) : 0; $('#pool-timer').textContent = fmt(left);
+    } else if (state.status === 'paired') {
+      const left = state.pairStart + 24*3600*1000 - now; $('#pair-timer').textContent = fmt(left);
+      if (left <= 0) { openModal('会话已结束', '24 小时已到，配对关系自动解除。'); stopTick(); show('entry'); }
+    }
+  }, 1000);
+}
+
+async function enterChat(data) {
+  state = { status: 'paired', pairId: data.pairId, partnerCode: data.partnerCode, pairStart: data.pairStart };
+  stopTick(); show('chat'); $('#partner-code').textContent = data.partnerCode; $('#messages').innerHTML = '';
+  const res = await api('/api/messages?pairId=' + encodeURIComponent(data.pairId) + '&id=' + encodeURIComponent(UID));
+  (res.messages || []).forEach(appendMsg);
+  if (socket) socket.emit('join', { id: UID });
+  startTick();
+  openModal('配对成功', '你们有 24 小时。请勿泄露姓名、班级等个人信息，聊天记录到期自动销毁。');
+}
+
+function appendMsg(msg) {
+  const box = $('#messages'); const div = document.createElement('div');
+  const mine = msg.sender_code === state.code;
+  div.className = 'msg ' + (mine ? 'me' : 'them');
+  div.innerHTML = `<div class="who">${msg.sender_code}</div>${escapeHtml(msg.text)}`;
+  box.appendChild(div); box.scrollTop = box.scrollHeight;
+}
+
+function sendMsg() {
+  const input = $('#msg-input'); const text = input.value.trim(); if (!text || !socket) return;
+  socket.emit('chat', { id: UID, text }); input.value = '';
+}
+$('#msg-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+
+function report() { openModal('已收到举报', '我们已记录本次会话。\n感谢你的反馈。'); }
+
+(async function init() {
+  connectSocket();
+  const me = await api('/api/me?id=' + encodeURIComponent(UID));
+  applyMe(me);
+})();
+</script>
+</body>
+</html>
