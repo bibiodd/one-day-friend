@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>赛博塔罗 · 一日好友</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: "Courier New", "PingFang SC", monospace;
+    background: #0a0a0a;
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(139,0,0,0.15), transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(75,0,130,0.15), transparent 50%);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; color: #c9c9c9;
+    overflow: hidden;
+  }
+  .card {
+    width: 100%; max-width: 340px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 13px; font-weight: 400; letter-spacing: 6px;
+    color: #8b0000; margin-bottom: 4px;
+    text-shadow: 0 0 15px rgba(139,0,0,0.8);
+  }
+  .sub { font-size: 10px; color: #444; letter-spacing: 3px; margin-bottom: 30px; }
+
+  /* 塔罗牌 */
+  .tarot-wrap {
+    perspective: 1000px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .tarot {
+    width: 200px; height: 320px;
+    margin: 0 auto;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .tarot.flipped {
+    transform: rotateY(180deg);
+    animation: none;
+  }
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  /* 背面 */
+  .back {
+    background: #0a0a0a;
+    border: 1px solid #4b0082;
+    box-shadow: 0 0 40px rgba(75,0,130,0.4), inset 0 0 60px rgba(0,0,0,0.9);
+    background-image:
+      repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(75,0,130,0.08) 8px, rgba(75,0,130,0.08) 9px),
+      repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(139,0,0,0.06) 8px, rgba(139,0,0,0.06) 9px);
+  }
+  .back-inner {
+    width: 80%; height: 80%;
+    border: 1px solid rgba(75,0,130,0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    color: #4b0082;
+    text-shadow: 0 0 20px rgba(75,0,130,0.8);
+  }
+  .back-hint {
+    position: absolute; bottom: 18px; left: 0; right: 0;
+    font-size: 10px; color: #333; letter-spacing: 3px;
+  }
+  /* 正面 */
+  .front {
+    background: #050505;
+    border: 1px solid #8b0000;
+    box-shadow: 0 0 40px rgba(139,0,0,0.4), inset 0 0 60px rgba(0,0,0,0.9);
+    transform: rotateY(180deg);
+    padding: 18px 14px;
+    justify-content: space-between;
+  }
+  .card-num {
+    font-size: 10px; color: #8b0000; letter-spacing: 3px;
+    margin-top: 4px;
+  }
+  .card-symbol {
+    font-size: 56px; line-height: 1;
+    color: #7ee8fa;
+    text-shadow: 0 0 25px rgba(126,232,250,0.6);
+    margin: 6px 0;
+  }
+  .card-name {
+    font-size: 13px; color: #e0e0e0; letter-spacing: 3px;
+    margin-bottom: 6px;
+  }
+  .card-en {
+    font-size: 8px; color: #555; letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .card-divider {
+    width: 40px; height: 1px; background: #8b0000;
+    margin: 0 auto 8px;
+  }
+  .card-code {
+    font-size: 12px; color: #7ee8fa;
+    letter-spacing: 1px; line-height: 1.4;
+    word-break: break-all;
+  }
+  .card-tag {
+    font-size: 10px; color: #4b0082; letter-spacing: 2px;
+    margin-top: 10px;
+  }
+
+  /* 按钮 */
+  button {
+    width: 100%; padding: 14px;
+    background: transparent; border: 1px solid #333;
+    color: #999; font-family: inherit; font-size: 12px;
+    letter-spacing: 4px; cursor: pointer;
+    transition: all 0.2s; text-transform: uppercase;
+    margin-top: 10px;
+  }
+  button:hover, button:active {
+    border-color: #8b0000; color: #e0e0e0;
+    background: rgba(139,0,0,0.1);
+  }
+  button.ghost { border-color: #2a2a2a; font-size: 11px; }
+  .hint {
+    font-size: 10px; color: #333; letter-spacing: 2px;
+    margin-top: 16px; line-height: 1.8;
+  }
+  .reading {
+    margin-top: 18px; padding: 16px;
+    background: rgba(0,0,0,0.5);
+    border-left: 2px solid #4b0082;
+    text-align: left;
+    font-size: 11px; color: #888;
+    line-height: 1.8; letter-spacing: 1px;
+    opacity: 0; transition: opacity 0.6s;
+  }
+  .reading.show { opacity: 1; }
+  .reading .label { color: #8b0000; font-size: 10px; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>ONE DAY FRIEND</h1>
+  <div class="sub">— 赛博塔罗 · 今日社交指引 —</div>
+
+  <div class="tarot-wrap">
+    <div class="tarot" id="tarot" onclick="draw()">
+      <div class="face back">
+        <div class="back-inner">✦</div>
+        <div class="back-hint">点击抽取</div>
+      </div>
+      <div class="face front" id="front">
+        <div>
+          <div class="card-num" id="cardNum">— 00 —</div>
+          <div class="card-symbol" id="cardSymbol">✦</div>
+          <div class="card-name" id="cardName">THE UNKNOWN</div>
+          <div class="card-en" id="cardEn">未知之牌</div>
+          <div class="card-divider"></div>
+        </div>
+        <div>
+          <div class="card-code" id="cardCode">—</div>
+          <div class="card-tag" id="cardTag">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button id="btnDraw" onclick="draw()">抽 取 今 日 塔 罗</button>
+  <button class="ghost" onclick="reset()">重 新 洗 牌</button>
+
+  <div class="reading" id="reading">
+    <div class="label" id="readingLabel">今日指引</div>
+    <div id="readingText"></div>
+  </div>
+
+  <div class="hint">截图分享，看看谁的塔罗最准</div>
+</div>
+
+<script>
+// ===== 塔罗牌库：22张大阿尔卡纳 =====
+const TAROT = [
+  { num:'00', symbol:'🃏', name:'THE FOOL', cn:'愚者',
+    code:['流浪的·诗人','自由的_风','做梦的蝴蝶'],
+    tag:'勇敢跳下去的人',
+    reading:'今天适合冲动一次。别想太多，直觉会带你走向对的地方。' },
+  { num:'I', symbol:'🜁', name:'THE MAGICIAN', cn:'魔术师',
+    code:['燃烧的·摇滚','失控的_造梦师','发光的疯子'],
+    tag:'想把想法变成现实的人',
+    reading:'你手里已经有一切工具了。别等条件完美，现在就开始做。' },
+  { num:'II', symbol:'🌙', name:'THE HIGH PRIESTESS', cn:'女祭司',
+    code:['冷月·幽灵','暗夜_女巫','寂静的猫'],
+    tag:'什么都懂但不说的人',
+    reading:'答案不在外面，在你心里。今天少说，多听。' },
+  { num:'III', symbol:'🌸', name:'THE EMPRESS', cn:'皇后',
+    code:['灿烂的·玫瑰','温柔的_殉道者','疯癫的公主'],
+    tag:'丰盛且有爱的人',
+    reading:'你有足够多的爱可以分给别人。今天主动对一个人好。' },
+  { num:'IV', symbol:'👑', name:'THE EMPEROR', cn:'皇帝',
+    code:['黑曜·骑士','倔强的_守墓人','血色废墟'],
+    tag:'想要掌控一切的人',
+    reading:'今天你需要结构。给自己定一条规矩，然后守住它。' },
+  { num:'V', symbol:'⛪', name:'THE HIEROPHANT', cn:'教皇',
+    code:['暗夜·天使','虔诚的_拾荒者','灰烬的诗人'],
+    tag:'寻找意义的人',
+    reading:'有些答案在传统里。今天听一个长辈或者前辈的话。' },
+  { num:'VI', symbol:'💞', name:'THE LOVERS', cn:'恋人',
+    code:['热烈的·烟花','共情的_疯子','流星_玫瑰'],
+    tag:'渴望深度连接的人',
+    reading:'今天会有一次重要的相遇，或者一次重要的选择。别逃避。' },
+  { num:'VII', symbol:'⚔️', name:'THE CHARIOT', cn:'战车',
+    code:['失控的·纵火犯','发疯的_骑士','狂暴流星'],
+    tag:'全速前进的人',
+    reading:'今天你需要的不是想清楚，而是先动起来。方向会在路上清晰。' },
+  { num:'VIII', symbol:'🦁', name:'STRENGTH', cn:'力量',
+    code:['温柔的·野火','倔强的_蝴蝶','赤诚的猫'],
+    tag:'柔韧但强大的人',
+    reading:'真正的力量是温柔的。今天对一个人示弱，反而会赢。' },
+  { num:'IX', symbol:'🏮', name:'THE HERMIT', cn:'隐者',
+    code:['迷路的·夜行者','孤独的_守墓人','冷月的猫'],
+    tag:'需要独处的人',
+    reading:'今天你不适合社交，适合一个人待着。别愧疚。' },
+  { num:'X', symbol:'☸️', name:'WHEEL OF FORTUNE', cn:'命运之轮',
+    code:['逃亡的·天使','荒唐的_造梦师','雾都玫瑰'],
+    tag:'被命运推着走的人',
+    reading:'今天会有一个意外。别抗拒，顺着它走。' },
+  { num:'XI', symbol:'⚖️', name:'JUSTICE', cn:'正义',
+    code:['黑曜·小丑','冷月的_殉道者','灰烬骑士'],
+    tag:'需要做决定的人',
+    reading:'今天你必须诚实面对一件事。逃避只会让代价更大。' },
+  { num:'XII', symbol:'🙃', name:'THE HANGED MAN', cn:'倒吊人',
+    code:['发疯的·诗人','做梦的_拾荒者','废墟烟花'],
+    tag:'卡住了但不想动的人',
+    reading:'今天别挣扎。换个角度看，问题会自己消失。' },
+  { num:'XIII', symbol:'💀', name:'DEATH', cn:'死神',
+    code:['暗夜·乌鸦','深渊的_纵火犯','黑玫瑰'],
+    tag:'需要结束某件事的人',
+    reading:'今天适合断舍离。删掉一个人、一个app、一个习惯。' },
+  { num:'XIV', symbol:'🕊️', name:'TEMPERANCE', cn:'节制',
+    code:['温柔的·女巫','寂静的_蝴蝶','冷月流星'],
+    tag:'需要平衡的人',
+    reading:'今天别走极端。什么都要一点，什么都要少一点。' },
+  { num:'XV', symbol:'😈', name:'THE DEVIL', cn:'恶魔',
+    code:['失控的·吸血鬼','深渊_纵火犯','血色玫瑰'],
+    tag:'被欲望抓住的人',
+    reading:'今天你会想堕落一下。允许它，但别沉进去。' },
+  { num:'XVI', symbol:'⚡', name:'THE TOWER', cn:'高塔',
+    code:['发疯·流星','废墟_乌鸦','失控的疯子'],
+    tag:'要经历崩塌的人',
+    reading:'今天可能会有坏消息。但塌掉的，本来就不该留。' },
+  { num:'XVII', symbol:'⭐', name:'THE STAR', cn:'星星',
+    code:['发光的·蝴蝶','遥远的_造梦师','冷月烟花'],
+    tag:'还有希望的人',
+    reading:'今天你会收到一个好消息，或者一个温暖的信号。别错过。' },
+  { num:'XVIII', symbol:'🌕', name:'THE MOON', cn:'月亮',
+    code:['迷路的·女巫','雾都_幽灵','冷月玫瑰'],
+    tag:'被情绪淹没的人',
+    reading:'今天的情绪别太当真。睡一觉，明天会不一样。' },
+  { num:'XIX', symbol:'☀️', name:'THE SUN', cn:'太阳',
+    code:['灿烂的·疯子','热烈的_流浪汉','烟花天使'],
+    tag:'正在发光的人',
+    reading:'今天你状态很好。出去见人，你的能量会照亮别人。' },
+  { num:'XX', symbol:'📯', name:'JUDGEMENT', cn:'审判',
+    code:['响亮的·殉道者','灰烬_天使','废墟摇滚'],
+    tag:'在做总结的人',
+    reading:'今天适合复盘。想清楚过去，下一步才走得稳。' },
+  { num:'XXI', symbol:'🌍', name:'THE WORLD', cn:'世界',
+    code:['自由的·游乐园','完整的_造梦师','流星天使'],
+    tag:'已经圆满的人',
+    reading:'今天你完成了某个循环。庆祝一下，然后开始下一个。' }
+];
+
+const $ = s => document.querySelector(s);
+let currentCard = null;
+let isFlipped = false;
+
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function draw() {
+  if (isFlipped) return;
+  isFlipped = true;
+
+  // 随机抽一张
+  const card = TAROT[Math.floor(Math.random() * TAROT.length)];
+  currentCard = card;
+
+  // 随机选一个代号
+  const code = pick(card.code);
+  const tag = card.tag;
+
+  // 填充
+  $('#cardNum').textContent = '— ' + card.num + ' —';
+  $('#cardSymbol').textContent = card.symbol;
+  $('#cardName').textContent = card.name;
+  $('#cardEn').textContent = card.cn;
+  $('#cardCode').textContent = code;
+  $('#cardTag').textContent = '「' + tag + '」';
+
+  // 翻牌
+  $('#tarot').classList.add('flipped');
+
+  // 延迟显示解读
+  setTimeout(() => {
+    $('#readingLabel').textContent = '【' + card.cn + '】今日社交指引';
+    $('#readingText').textContent = card.reading;
+    $('#reading').classList.add('show');
+  }, 900);
+
+  $('#btnDraw').textContent = '已 抽 取';
+  $('#btnDraw').style.opacity = '0.4';
+}
+
+function reset() {
+  isFlipped = false;
+  currentCard = null;
+  $('#tarot').classList.remove('flipped');
+  $('#reading').classList.remove('show');
+  $('#btnDraw').textContent = '抽 取 今 日 塔 罗';
+  $('#btnDraw').style.opacity = '1';
+}
+
+// 长按保存分享
+$('#tarot').addEventListener('touchstart', () => {});
+</script>
+</body>
+  </html>
